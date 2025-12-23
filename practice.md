@@ -96,11 +96,43 @@ sudo docker run -d \
 ```
 
 如果上面在拉取镜像时很慢，试着先用国内的镜像源拉取：
-第一步：改用网易或百度维护的镜像地址（速度通常是官方的 10 倍以上）。
+###### 第一步：改用网易或百度维护的镜像地址（速度通常是官方的 10 倍以上）。
 ```
 sudo docker pull hub-mirror.c.163.com/homeassistant/home-assistant:stable
 ```
-第二步：修改名字并运行
+sudo docker pull hub-mirror.c.163.com/homeassistant/home-assistant:stable 在这一步下：Error response from deamon:failed to resolve reference :"hub-mirror.c.163.com/homeassistant/home-assistant:stable" :failed to do request : Head "https://hub-mirror.c.163.com/homeassistant/home-assistant:stable" : dial tcp:lookup hub-mirror.c.163.com on 127.0.0.53:53: no such host
+上述报错：树莓派现在没法解析网址（DNS解析失败)
+第一步：修复树莓派的DNS设置
+1.打开配置文件：
+```
+sudo nano /etc/resolv.conf
+```
+2.在文件的最开头添加这两行
+```
+nameserver 223.5.5.5
+nameserver 8.8.8.8
+```
+（这是阿里云和谷歌的公共拨号服务器，非常稳定）
+第二步：测试网络是否通畅
+输入以下命令，看看能不能得到回应：
+```
+ping -c 4 baidu.com
+```
+第三步：使用最稳妥的镜像地址
+我们换一个目前最稳的 DockerProxy 代理地址。
+sudo docker pull docker.m.daocloud.io/homeassistant/home-assistant:stable
+第四步：启动Home Assistant
+```
+sudo docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  --network=host \
+  docker.m.daocloud.io/homeassistant/home-assistant:stable
+```
+###### 第二步：修改名字并运行
 等上面的进度条跑完后，我们给这个镜像起个好记的名字并启动它：
 ```
 sudo docker run -d \
