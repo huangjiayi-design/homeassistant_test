@@ -20,7 +20,6 @@ sudo sh get-docker.sh
 
 #### 1. 更新索引并安装必要的工具
 ```
-
 sudo apt update
 sudo apt install ca-certificates curl gnupg lsb-release -y
 ```
@@ -29,11 +28,23 @@ sudo apt install ca-certificates curl gnupg lsb-release -y
 sudo mkdir -p /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 ```
+
+上一步被拦截的话，就换国内镜像源添加密钥
+```
+curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+```
 #### 3. 把 Docker 的下载地址加入系统的“白名单”
 ```
 这一行命令很长，建议直接复制粘贴：
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+下载地址指向国内服务器
+```
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 #### 4. 正式安装 Docker 引擎
@@ -42,9 +53,10 @@ sudo apt update
 sudo apt install docker-ce docker-ce-cli containerd.io -y
 如何确认是否成功？
 安装完成后，再次输入：
-
 docker --version
 ```
+
+
 
 ### 
 视频里是在绿联云的 Docker 镜像仓库搜“homeassistant”，在树莓派上，你直接把这行命令全部复制并粘贴到终端按回车：
