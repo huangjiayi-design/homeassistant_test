@@ -88,6 +88,16 @@ JSON
   ]
 }
 ```
+上面两步有问题：
+先打开文件：
+sudo nano /etc/docker/daemon.json
+将里面的内容都删掉：
+{
+  "registry-mirrors": [
+    "https://mirror.baidubce.com",
+    "https://docker.m.daocloud.io"
+  ]
+}
 ##### 3.保存并退出： 按 Ctrl + O，回车，再按 Ctrl + X。
 
 ##### 4.重启 Docker 使其生效：
