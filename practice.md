@@ -10,6 +10,10 @@ pwd
 通常是 /home/ubuntu/homeassistant/config
 ```
 
+### 安装docker引擎
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
 ### 
 视频里是在绿联云的 Docker 镜像仓库搜“homeassistant”，在树莓派上，你直接把这行命令全部复制并粘贴到终端按回车：
 ```
