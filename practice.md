@@ -35,7 +35,7 @@ echo \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-##### 下载地址指向国内服务器
+##### 上面的还是不要看了，直接用下面的吧，下载地址指向国内服务器
 ```
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
@@ -72,39 +72,14 @@ sudo docker run -d \
 ### 1. 第一步：设置镜像加速（这一步非常重要！）
 由于 Home Assistant 的镜像文件在国外，直接下载可能会卡住或报错。我们先给 Docker 加上“加速器”：
 
-##### 1.打开配置文件：
-```
-sudo nano /etc/docker/daemon.json
-```
-##### 2.把下面这段话复制进去：
-```
-JSON
-
-{
-  "registry-mirrors": [
-    "https://mirror.baidubce.com",
-    "https://docker.m.daocloud.io",
-    "https://dockerproxy.com"
-  ]
-}
-```
-上面两步有问题：
-先打开文件：
-sudo nano /etc/docker/daemon.json
-将里面的内容都删掉：
-{
-  "registry-mirrors": [
-    "https://mirror.baidubce.com",
-    "https://docker.m.daocloud.io"
-  ]
-}
-##### 3.保存并退出： 按 Ctrl + O，回车，再按 Ctrl + X。
-
-##### 4.重启 Docker 使其生效：
+镜像加速的话老是有问题：Job for docker.service failed because the control process exited with error code. See "system status docker.service" and "journalctl -xeu docker.service " for details. （一到重启就报这样的错)
+所以就省掉这一步了
+##### 1.重启 Docker 使其生效：
 ```
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 ```
+
 ### 第二步：一键部署 Home Assistant
 现在，我们执行最后那段长命令。这段代码对应视频里博主在界面上填写的“存储空间”、“网络模式”和“环境变量”。
 
@@ -118,6 +93,24 @@ sudo docker run -d \
   -v /home/$USER/hass_config:/config \
   --network=host \
   ghcr.io/home-assistant/home-assistant:stable
+```
+
+如果上面在拉取镜像时很慢，试着先用国内的镜像源拉取：
+第一步：改用网易或百度维护的镜像地址（速度通常是官方的 10 倍以上）。
+```
+sudo docker pull hub-mirror.c.163.com/homeassistant/home-assistant:stable
+```
+第二步：修改名字并运行
+等上面的进度条跑完后，我们给这个镜像起个好记的名字并启动它：
+```
+sudo docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  --network=host \
+  hub-mirror.c.163.com/homeassistant/home-assistant:stable
 ```
 这一步在做什么？（对应视频里的设置）
 ```
@@ -135,3 +128,4 @@ ghcr.io/...:stable：这就是你要下载的镜像（Image）。
 2.输入 sudo docker ps 确认一下，如果看到 homeassistant 状态是 Up，说明它已经在运行了！
 
 3.打开浏览器（用你的电脑或者树莓派里的浏览器），在地址栏输入： http://localhost:8123 （如果在树莓派本地） 或者 http://树莓派的IP地址:8123 （在另一台电脑上）
+
