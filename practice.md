@@ -1,3 +1,4 @@
+## 关卡一 ： 下载docker
 ### 1.打开终端：
 ```
 # 进入你的个人主目录
@@ -11,13 +12,6 @@ pwd
 ```
 
 ### 安装docker引擎
-```但是有点问题 在安装上
-在此之前：安装curl：sudo apt update && sudo apt install curl -y
-
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-```
-
 #### 1. 更新索引并安装必要的工具
 ```
 sudo apt update
@@ -41,7 +35,7 @@ echo \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
-下载地址指向国内服务器
+##### 下载地址指向国内服务器
 ```
 echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://mirrors.aliyun.com/docker-ce/linux/ubuntu \
@@ -58,7 +52,7 @@ docker --version
 
 
 
-### 
+### 不知道这段代码还有没有用了，要是之前的操作都ok，这一步就可以跳过了
 视频里是在绿联云的 Docker 镜像仓库搜“homeassistant”，在树莓派上，你直接把这行命令全部复制并粘贴到终端按回车：
 ```
 sudo docker run -d \
@@ -70,3 +64,64 @@ sudo docker run -d \
   --network=host \
   ghcr.io/home-assistant/home-assistant:stable
   ```
+
+
+#### 好的下好docker，开始下一步
+## 关卡二 ： 把 Home Assistant 的“集装箱（容器）”放到这个地基上。
+
+### 1. 第一步：设置镜像加速（这一步非常重要！）
+由于 Home Assistant 的镜像文件在国外，直接下载可能会卡住或报错。我们先给 Docker 加上“加速器”：
+
+##### 1.打开配置文件：
+```
+sudo nano /etc/docker/daemon.json
+```
+##### 2.把下面这段话复制进去：
+```
+JSON
+
+{
+  "registry-mirrors": [
+    "https://mirror.baidubce.com",
+    "https://docker.m.daocloud.io",
+    "https://dockerproxy.com"
+  ]
+}
+```
+##### 3.保存并退出： 按 Ctrl + O，回车，再按 Ctrl + X。
+
+##### 4.重启 Docker 使其生效：
+```
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+### 第二步：一键部署 Home Assistant
+现在，我们执行最后那段长命令。这段代码对应视频里博主在界面上填写的“存储空间”、“网络模式”和“环境变量”。
+
+###### 直接复制这一整段到终端：
+```
+sudo docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  --network=host \
+  ghcr.io/home-assistant/home-assistant:stable
+```
+这一步在做什么？（对应视频里的设置）
+```
+--name homeassistant：给你的容器起名。
+
+-v /home/$USER/hass_config:/config：对应视频里的存储空间。它会在你的主目录下创建一个 hass_config 文件夹，所有的配置都在这。
+
+--network=host：对应视频里的网络模式：Host。这样它才能找到你家里的智能灯。
+
+ghcr.io/...:stable：这就是你要下载的镜像（Image）。
+```
+### 第三步：等待并进入网页
+1.运行完上面的命令后，终端会显示一串长长的 ID。
+
+2.输入 sudo docker ps 确认一下，如果看到 homeassistant 状态是 Up，说明它已经在运行了！
+
+3.打开浏览器（用你的电脑或者树莓派里的浏览器），在地址栏输入： http://localhost:8123 （如果在树莓派本地） 或者 http://树莓派的IP地址:8123 （在另一台电脑上）
