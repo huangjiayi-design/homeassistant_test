@@ -1,0 +1,4 @@
+homeassistant 主要分为 docker版本和os版本
+os版本：自带加载项商店
+对于个人而言使用加载项商店，主要是使用nodered
+docker 版本的没有内置加载项商店，但是可以后期单独部署一个docker版本的nodered，然后与home assistant关联的方式
