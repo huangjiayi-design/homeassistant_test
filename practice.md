@@ -220,4 +220,45 @@ sudo docker run -d \
   -v /home/$USER/hass_config:/config \
   --network=host \
   swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
+
+```
+```
+
+###### 先删容器
+```
+sudo docker rm -f homeassistant
+```
+###### 删掉所有相关的镜像（根据你的列表把 ID 填进去，或者直接按名字删）
+```
+sudo docker rmi -f swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
+```
+# 清理所有悬挂的镜像层
+```
+sudo docker system prune -a -f
+```
+
+既然华为云的这个地址让你反复抓取到 amd64，我们换一个专门为树莓派/ARM 优化的镜像仓库。
+
+这次我们尝试 DaoCloud 的专用节点，它在处理多架构时通常更准确：
+
+1. 拉取（注意：这次换了地址，成功率极高）
+```
+sudo docker pull docker.m.daocloud.io/homeassistant/home-assistant:stable
+```
+2. 检查镜像详细信息（关键：确认架构）
+```
+sudo docker inspect docker.m.daocloud.io/homeassistant/home-assistant:stable | grep Architecture
+```
+第三步：强制以“指定架构”模式运行
+在运行命令时，我们再次声明平台，并使用刚才下载的新地址：
+```sudo docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  --platform linux/arm64 \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  --network=host \
+  docker.m.daocloud.io/homeassistant/home-assistant:stable
+
 ```
