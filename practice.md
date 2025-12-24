@@ -193,40 +193,12 @@ ghcr.io/...:stable：这就是你要下载的镜像（Image）。
 3.打开浏览器（用你的电脑或者树莓派里的浏览器），在地址栏输入： http://localhost:8123 （如果在树莓派本地） 或者 http://树莓派的IP地址:8123 （在另一台电脑上）
 
 ### 关卡二： 把 Home Assistant 的“集装箱（容器）”放到这个地基上。
-上面使用镜像老是不允许访问，所以我们手动安装
-
-##### 1.在你的 Windows 电脑上下载镜像包
-打开浏览器，使用这个由热心网友维护的代理下载链接（这会直接下载一个 400MB 左右的文件）：
-
-访问：https://docker.hyyt.xyz/ghcr.io/home-assistant/home-assistant:stable
-
-(或者任何一个 Docker 镜像代下网站，搜索 homeassistant/home-assistant:stable)
-
-你会得到一个名为 home-assistant.tar 的文件。
-
-##### 2.将文件传给树莓派
-你可以使用 U 盘，或者最简单的 WinSCP 工具（或者在 Windows 终端用一条指令）：
-
-在 Windows 的 CMD/终端 里输入（确保你在文件所在的文件夹）：scp home-assistant.tar ubuntu@你的树莓派IP:/home/ubuntu/
-
-##### 3.在树莓派上解压镜像
-
-文件传好后，回到树莓派终端，输入：
-
-Bash
-
-sudo docker load -i /home/ubuntu/home-assistant.tar
-
-4. 运行 Home Assistant
-既然镜像已经在本地了，直接运行这个命令，1秒钟就会启动：
+##### 试试这个：
+第一步：获取正确的“树莓派专用"拉取命令
 ```
-sudo docker run -d \
-  --name homeassistant \
-  --privileged \
-  --restart=unless-stopped \
-  -e TZ=Asia/Shanghai \
-  -v /home/$USER/hass_config:/config \
-  --network=host \
-  homeassistant/home-assistant:stable
-
+sudo docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
+```
+第二步：将“华为镜像”变回“标准名字”
+```
+sudo docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable homeassistant/home-assistant:stable
 ```
