@@ -213,3 +213,12 @@ sudo docker run -d \
   --network=host \
   homeassistant/home-assistant:stable
 ```
+
+sudo docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  --network=host \
+  homeassistant/home-assistant:stable      
