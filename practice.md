@@ -102,26 +102,55 @@ sudo docker pull hub-mirror.c.163.com/homeassistant/home-assistant:stable
 ```
 sudo docker pull hub-mirror.c.163.com/homeassistant/home-assistant:stable 在这一步下：Error response from deamon:failed to resolve reference :"hub-mirror.c.163.com/homeassistant/home-assistant:stable" :failed to do request : Head "https://hub-mirror.c.163.com/homeassistant/home-assistant:stable" : dial tcp:lookup hub-mirror.c.163.com on 127.0.0.53:53: no such host
 上述报错：树莓派现在没法解析网址（DNS解析失败)
-第一步：修复树莓派的DNS设置
-1.打开配置文件：
+1.修复树莓派的DNS设置
+(1).打开配置文件：
 ```
 sudo nano /etc/resolv.conf
 ```
-2.在文件的最开头添加这两行
+(2).在文件的最开头添加这两行
 ```
 nameserver 223.5.5.5
 nameserver 8.8.8.8
 ```
+保存退出： 按 Ctrl + O，回车，再按 Ctrl + X。
 （这是阿里云和谷歌的公共拨号服务器，非常稳定）
-第二步：测试网络是否通畅
+2.测试网络是否通畅
 输入以下命令，看看能不能得到回应：
 ```
 ping -c 4 baidu.com
 ```
-第三步：使用最稳妥的镜像地址
+3.使用镜像：
 我们换一个目前最稳的 DockerProxy 代理地址。
 sudo docker pull docker.m.daocloud.io/homeassistant/home-assistant:stable
-第四步：启动Home Assistant
+3.又失败了：
+1)).代开配置文件
+```
+sudo nano /etc/docker/daemon.json
+```
+2)).清空内容，完整复制并粘贴以下这段
+```Json
+{
+  "registry-mirrors": [
+    "https://docker.m.daocloud.io",
+    "https://docker.unsee.tech",
+    "https://docker.1panel.live",
+    "https://mirror.baidubce.com"
+  ]
+}
+```
+3)).保存并退出
+Ctrl + O -> Enter -> Ctrl + X。
+4)).重启docker服务
+```
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+5)).现在尝试最原始的命令（docker会自动遍历上面那几个加速器)
+```
+sudo docker pull homeassistant/home-assistant:stable
+```
+
+4.：启动Home Assistant
 ```
 sudo docker run -d \
   --name homeassistant \
