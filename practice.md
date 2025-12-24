@@ -194,15 +194,23 @@ ghcr.io/...:stable：这就是你要下载的镜像（Image）。
 
 ### 关卡二： 把 Home Assistant 的“集装箱（容器）”放到这个地基上。
 ##### 试试这个：
-第一步：获取正确的“树莓派专用"拉取命令
+删除报错的容器
 ```
-sudo docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
+sudo docker rm -f homeassistant
 ```
-第二步：将“华为镜像”变回“标准名字”
+
+删除错误的镜像
 ```
-sudo docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable homeassistant/home-assistant:stable
+sudo docker rmi homeassistant/home-assistant:stable
+sudo docker rmi swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
 ```
-第三步启动homeassistant
+精准拉取“树莓派专用（arm64）”镜像
+
+```
+sudo docker pull --platform linux/arm64 swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
+```
+
+正式运行：
 ```
 sudo docker run -d \
   --name homeassistant \
@@ -211,5 +219,5 @@ sudo docker run -d \
   -e TZ=Asia/Shanghai \
   -v /home/$USER/hass_config:/config \
   --network=host \
-  homeassistant/home-assistant:stable
+  swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable
 ```
