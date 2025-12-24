@@ -202,3 +202,14 @@ sudo docker pull swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistan
 ```
 sudo docker tag swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/homeassistant/home-assistant:stable homeassistant/home-assistant:stable
 ```
+第三步启动homeassistant
+```
+sudo docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  --network=host \
+  homeassistant/home-assistant:stable
+```
