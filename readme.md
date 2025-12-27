@@ -226,3 +226,14 @@ docker run -d \
   --device /dev/mem:/dev/mem \
   ghcr.io/home-assistant/home-assistant:stable
 ```
+
+
+##### 修改后的正确格式
+```
+switch:
+  - platform: rpi_gpio
+    switches:
+      - port: 17
+        name: "Desk LED"
+        unique_id: "raspberry_pi_led_17"
+```
