@@ -247,7 +247,7 @@ light:
         name: "My PWM LED"
 ```
 
-
+```
 # 1. 首先确保你的基础开关配置正确 (注意 entity_id 会是 switch.desk_led)
 switch:
   - platform: rpi_gpio
@@ -265,36 +265,37 @@ input_number:
     step: 1
 
 # 3. 定义模板灯
-```
-light:
-  - platform: template
-    lights:
-      my_dimmable_led:
-        friendly_name: "My LED with Slider"
-        # 状态显示：根据物理开关的状态来显示 UI 上的开关
-        value_template: "{{ is_state('switch.desk_led', 'on') }}"
-        # 亮度显示：从上面的 input_number 读取数值
-        level_template: "{{ states('input_number.led_brightness') | int }}"
+template:
+  - light:
+      - name: "My LED with Slider"
+        unique_id: "my_dimmable_led_new"
+        # 状态显示：根据物理开关判断是开还是关
+        state: "{{ is_state('switch.desk_led', 'on') }}"
+        # 亮度显示：从辅助器读取数值
+        level: "{{ states('input_number.led_brightness') | int }}"
         
+        # 点开灯时的动作
         turn_on:
-          service: switch.turn_on
-          target:
-            entity_id: switch.desk_led
-        turn_off:
-          service: switch.turn_off
+          action: switch.turn_on
           target:
             entity_id: switch.desk_led
             
-        # 当你滑动滑块时执行的操作
+        # 点关灯时的动作
+        turn_off:
+          action: switch.turn_off
+          target:
+            entity_id: switch.desk_led
+            
+        # 滑动滑块时的动作
         set_level:
-          - service: input_number.set_value
+          # 保存滑动后的数值
+          - action: input_number.set_value
             target:
               entity_id: input_number.led_brightness
             data:
               value: "{{ brightness }}"
-          # 虽然这里无法改变物理亮度，但你可以加个逻辑：
-          # 比如亮度低于 10 就关灯，高于 10 就开灯
-          - service: >
+          # 根据亮度决定是否开启物理开关
+          - action: >
               {% if brightness > 0 %}
                 switch.turn_on
               {% else %}
