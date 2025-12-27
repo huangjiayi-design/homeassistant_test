@@ -333,7 +333,7 @@ switch:
 
 
 可是在这里的：```sudo apt install pigpio -y``` 的输出结果是：```E: Package 'pigpio' has no installation candidate ```
-
+这个版本的 Ubuntu 对树莓派的底层硬件（GPIO）控制做了非常严格的内核级限制，传统的 pigpio 或 rpi_gpio 插件在这种新内核下非常容易失效，这正是你尝试了各种方法灯却一直不亮的“终极原因”。
 ##### 使用系统原生的 gpiod 工具进行控制
 ```
 switch:
@@ -341,6 +341,20 @@ switch:
     switches:
       school_project_led:
         # 注意：在树莓派4B上，GPIO 17 通常对应芯片 0 的第 17 号偏移
+        command_on: "gpioset 0 17=1"
+        command_off: "gpioset 0 17=0"
+        friendly_name: "School_Project_LED"
+```
+
+test:
+```
+# switch: 顶格写
+switch:
+  - platform: command_line
+    switches:
+      # 这里 6 个空格
+      school_led_direct:
+        # 这里 8 个空格
         command_on: "gpioset 0 17=1"
         command_off: "gpioset 0 17=0"
         friendly_name: "School_Project_LED"
