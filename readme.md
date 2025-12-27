@@ -237,3 +237,69 @@ switch:
         name: "Desk LED"
         unique_id: "raspberry_pi_led_17"
 ```
+
+PWM:
+```
+light:
+  - platform: rpi_gpio
+    switches:
+      - port: 17
+        name: "My PWM LED"
+```
+
+
+# 1. 首先确保你的基础开关配置正确 (注意 entity_id 会是 switch.desk_led)
+switch:
+  - platform: rpi_gpio
+    switches:
+      - port: 17
+        name: "Desk LED"
+
+# 2. 定义一个虚拟的亮度数值存储 (用于滑块滑动)
+input_number:
+  led_brightness:
+    name: "LED Brightness Helper"
+    initial: 255
+    min: 0
+    max: 255
+    step: 1
+
+# 3. 定义模板灯
+```
+light:
+  - platform: template
+    lights:
+      my_dimmable_led:
+        friendly_name: "My LED with Slider"
+        # 状态显示：根据物理开关的状态来显示 UI 上的开关
+        value_template: "{{ is_state('switch.desk_led', 'on') }}"
+        # 亮度显示：从上面的 input_number 读取数值
+        level_template: "{{ states('input_number.led_brightness') | int }}"
+        
+        turn_on:
+          service: switch.turn_on
+          target:
+            entity_id: switch.desk_led
+        turn_off:
+          service: switch.turn_off
+          target:
+            entity_id: switch.desk_led
+            
+        # 当你滑动滑块时执行的操作
+        set_level:
+          - service: input_number.set_value
+            target:
+              entity_id: input_number.led_brightness
+            data:
+              value: "{{ brightness }}"
+          # 虽然这里无法改变物理亮度，但你可以加个逻辑：
+          # 比如亮度低于 10 就关灯，高于 10 就开灯
+          - service: >
+              {% if brightness > 0 %}
+                switch.turn_on
+              {% else %}
+                switch.turn_off
+              {% endif %}
+            target:
+              entity_id: switch.desk_led
+```
