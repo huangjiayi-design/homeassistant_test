@@ -173,6 +173,7 @@ https://github.com/hacs/integration/releases/latest/download/hacs.zip
 
 #### 3. 重启homeassistant
 
+
 >1. 回到 Home Assistant 网页.
 > 2. 点击 配置 (Settings) -> 系统 (System) -> 右上角 重新启动 (Restart)。
 > 3. 或者选择 重新启动 Home Assistant。会有一个中断正在运行的自动化和脚本按钮，是的没错点击重启homeassistant
@@ -206,6 +207,24 @@ https://github.com/hacs/integration/releases/latest/download/hacs.zip
 >>之后就可以在概览那里看到新添加的空调控制窗口了。
 
 
+
+>>##### 1. 进到你放插件的目录
+>>cd ~/hass_config/custom_components/
+>>##### 2. 从网上下载这个插件代码
+>>git clone https://github.com/thecode/ha-rpi_gpio.git rpi_gpio_temp
+>>##### 3. 把核心文件夹搬到正确的位置
+>>mv rpi_gpio_temp/custom_components/rpi_gpio ./rpi_gpio
+>>##### 4. 把用不着的垃圾清理掉
+>>rm -rf rpi_gpio_temp
+>>
+>>##### 5. 按照你的 readme 关卡三，把所有权拿回来（这步不做，HA 就看不见插件！）
+>>
+>>```
+>>sudo chown -R $USER:$USER ~/hass_config/
+>>sudo chmod -R 755 ~/hass_config/
+
+>>nano ~/hass_config/configuration.yaml
+粘贴进去这些代码：
 ```
 switch:
   - platform: rpi_gpio
@@ -213,4 +232,101 @@ switch:
       - port: 18
         name: "School_Project_LED"
         unique_id: "school_led_001"
+
 ```
+```
+你的 README.md 避坑指南更新
+现象：日志报错 'ports' is an invalid option。
+
+原因：YAML 配置参数与插件版本不匹配，或缩进层级错误。
+
+解决：查阅插件文档，将 ports: 结构改为 switches: 列表结构。
+
+###### Docker 硬件权限:
+如果在网页上显示 on 但灯不亮，可能是 Docker 没拿到操作 GPIO 的最终权限。这时可以在终端输入这个“大力出奇迹”的命令并重启：
+```
+sudo chmod 666 /dev/gpiomem
+sudo docker restart homeassistant
+```
+
+###### 强制赋予 Docker 硬件访问权限
+```
+#彻底放开 GPIO 内存访问权限
+sudo chmod 777 /dev/gpiomem
+#确保 ubuntu 用户在 gpio 组（如果报错说明已存在，没关系）
+sudo usermod -a -G gpio $USER
+#重启 HA 容器让权限生效
+sudo docker restart homeassistant
+```
+##### 这里我的led灯还是没亮：
+sudo docker inspect homeassistant | grep -i privileged
+-> "Privileged":true
+这说明 Docker 容器与树莓派硬件之间的“大门”是完全敞开的。
+
+我们直接在树莓派终端，绕过 Home Assistant，用系统自带的命令控制引脚。如果这招亮了，就说明是 HA 插件的兼容性问题；如果这招都不亮，就是引脚接触或数错位置的问题。
+```
+# 1. 进入 GPIO 控制目录
+cd /sys/class/gpio
+
+# 2. 导出 GPIO 17（如果你配置改成了 17）
+# 如果报错说 device or resource busy，说明 HA 正在占用它，不用管，直接跳到第 4 步
+echo 17 | sudo tee export
+
+# 3. 设置为输出模式
+echo out | sudo tee gpio17/direction
+
+# 4. 强制给高电平（点火！）
+echo 1 | sudo tee gpio17/value
+```
+
+
+> 这里在执行第二步的时候：
+>>```
+>>echo 17 | sudo tee export
+>>输出结果：
+>>17 
+>>tee: export: Invalid argument
+>>```
+>它通常意味着 GPIO 17 已经被系统“占用”或“导出”过了，或者系统正在使用不同的编号规则。
+
+>好的这里我们直接跳到第四步：
+>>```
+>>echo 1 | sudo tee gpio17/value
+>>输出结果：
+>>tee: gpio17/value: No such file or directory
+>>1
+>>```
+> - No such file or directory 终于让我们找到了最后的“病灶”：GPIO 17 根本没有被成功激活（导出）。
+> - 这是因为在树莓派 4B 的较新系统中，传统的 /sys/class/gpio 操作方式正在被废弃，或者由于之前的 Invalid argument 报错，导致 gpio17 这个文件夹压根没生成。
+
+
+#### 终极方案：使用“远程 GPIO”插件（万能灵药）
+
+现在的 rpi_gpio 插件在很多 Docker 环境下确实存在映射不上的问题。我们换一个更强大、兼容性更好的办法，也是老师会非常欣赏的高级操作。
+
+#### 第一步：在树莓派宿主机安装 GPIO 守护进程
+回到你的树莓派终端（不要进入容器），输入：
+```
+# 安装 GPIO 守护服务
+sudo apt update
+sudo apt install pigpio -y
+
+# 启动并设置为开机自启
+sudo systemctl enable pigpio
+sudo systemctl start pigpio
+```
+
+#### 第二步：修改 Home Assistant 配置
+我们要改用 remote_rpi_gpio 模式，它通过网络端口通信，完美绕过 Docker 的权限和路径问题。
+
+输入 ```nano ~/hass_config/configuration.yaml```。
+
+把原来的 ```switch``` 部分全部删掉，改为：
+```
+switch:
+  - platform: remote_rpi_gpio
+    host: 127.0.0.1
+    ports:
+      17: "School_Project_LED"
+```
+保存退出并重启HA：```sudo docker reatart homeassistant```
