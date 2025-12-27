@@ -330,3 +330,18 @@ switch:
       17: "School_Project_LED"
 ```
 保存退出并重启HA：```sudo docker reatart homeassistant```
+
+
+可是在这里的：```sudo apt install pigpio -y``` 的输出结果是：```E: Package 'pigpio' has no installation candidate ```
+
+##### 使用系统原生的 gpiod 工具进行控制
+```
+switch:
+  - platform: command_line
+    switches:
+      school_project_led:
+        # 注意：在树莓派4B上，GPIO 17 通常对应芯片 0 的第 17 号偏移
+        command_on: "gpioset 0 17=1"
+        command_off: "gpioset 0 17=0"
+        friendly_name: "School_Project_LED"
+```
