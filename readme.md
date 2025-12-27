@@ -238,7 +238,7 @@ switch:
         unique_id: "raspberry_pi_led_17"
 ```
 
-PWM:
+PWM  软件设计:
 ```
 light:
   - platform: rpi_gpio
@@ -303,4 +303,34 @@ template:
               {% endif %}
             target:
               entity_id: switch.desk_led
+```
+
+```
+switch:
+  - platform: rpi_gpio
+    switches:
+      - port: 17             # 这是你之前的 LED
+        name: "Desk LED"
+        unique_id: "raspberry_pi_led_17"
+      - port: 18             # 直接并列在下面，不要重复写 switch:
+        name: "Fan Switch"
+        unique_id: "pi_fan_ctrl"
+```
+
+包装：
+```
+fan:
+  - platform: template
+    fans:
+      my_desk_fan:
+        friendly_name: "我的小风扇"
+        value_template: "{{ states('switch.fan_switch') }}"
+        turn_on:
+          action: switch.turn_on
+          target:
+            entity_id: switch.fan_switch
+        turn_off:
+          action: switch.turn_off
+          target:
+            entity_id: switch.fan_switch
 ```
