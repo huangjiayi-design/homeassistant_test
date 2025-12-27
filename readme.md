@@ -222,9 +222,9 @@ https://github.com/hacs/integration/releases/latest/download/hacs.zip
 >>```
 >>sudo chown -R $USER:$USER ~/hass_config/
 >>sudo chmod -R 755 ~/hass_config/
-
->>nano ~/hass_config/configuration.yaml
-粘贴进去这些代码：
+>>```
+>>```nano ~/hass_config/configuration.yaml```
+>>粘贴进去这些代码：
 ```
 switch:
   - platform: rpi_gpio
@@ -232,9 +232,8 @@ switch:
       - port: 18
         name: "School_Project_LED"
         unique_id: "school_led_001"
+```
 
-```
-```
 你的 README.md 避坑指南更新
 现象：日志报错 'ports' is an invalid option。
 
@@ -249,15 +248,16 @@ sudo chmod 666 /dev/gpiomem
 sudo docker restart homeassistant
 ```
 
+
 ###### 强制赋予 Docker 硬件访问权限
-```
-#彻底放开 GPIO 内存访问权限
-sudo chmod 777 /dev/gpiomem
-#确保 ubuntu 用户在 gpio 组（如果报错说明已存在，没关系）
-sudo usermod -a -G gpio $USER
-#重启 HA 容器让权限生效
-sudo docker restart homeassistant
-```
+>>```
+>>#彻底放开 GPIO 内存访问权限
+>>sudo chmod 777 /dev/gpiomem
+>>#确保 ubuntu 用户在 gpio 组（如果报错说明已存在，没关系）
+>>sudo usermod -a -G gpio $USER
+>#重启 HA 容器让权限生效
+>sudo docker restart homeassistant
+>```
 ##### 这里我的led灯还是没亮：
 sudo docker inspect homeassistant | grep -i privileged
 -> "Privileged":true
@@ -307,11 +307,11 @@ echo 1 | sudo tee gpio17/value
 #### 第一步：在树莓派宿主机安装 GPIO 守护进程
 回到你的树莓派终端（不要进入容器），输入：
 ```
-# 安装 GPIO 守护服务
+#安装 GPIO 守护服务
 sudo apt update
 sudo apt install pigpio -y
 
-# 启动并设置为开机自启
+#启动并设置为开机自启
 sudo systemctl enable pigpio
 sudo systemctl start pigpio
 ```
