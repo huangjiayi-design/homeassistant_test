@@ -319,12 +319,44 @@ switch:
 
 包装：
 ```
-fan:
-  - platform: template
-    fans:
-      my_desk_fan:
-        friendly_name: "我的小风扇"
-        value_template: "{{ states('switch.fan_switch') }}"
+# 1. 基础开关 (物理层)
+switch:
+  - platform: rpi_gpio
+    switches:
+      - port: 17
+        name: "Desk LED Switch"
+      - port: 18
+        name: "Fan Switch"
+
+# 2. 统一模板域 (界面层)
+# 注意：整个 yaml 文件只能有一个顶层 template: 标签
+template:
+  # 这里放你之前的灯
+  - light:
+      - name: "My LED with Slider"
+        unique_id: "my_dimmable_led_new"
+        state: "{{ is_state('switch.desk_led_switch', 'on') }}"
+        level: "{{ states('input_number.led_brightness') | int }}"
+        turn_on:
+          action: switch.turn_on
+          target:
+            entity_id: switch.desk_led_switch
+        turn_off:
+          action: switch.turn_off
+          target:
+            entity_id: switch.desk_led_switch
+        set_level:
+          - action: input_number.set_value
+            target:
+              entity_id: input_number.led_brightness
+            data:
+              value: "{{ brightness }}"
+
+  # 这里放你的新版风扇
+  - fan:
+      - name: "我的小风扇"
+        unique_id: "my_desk_fan_new"
+        state: "{{ states('switch.fan_switch') }}"
         turn_on:
           action: switch.turn_on
           target:
