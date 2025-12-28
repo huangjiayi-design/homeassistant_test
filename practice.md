@@ -262,3 +262,47 @@ sudo docker inspect docker.m.daocloud.io/homeassistant/home-assistant:stable | g
   docker.m.daocloud.io/homeassistant/home-assistant:stable
 
 ```
+```
+esphome:
+  name: esp32
+  friendly_name: ESP32
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "YmjSICgiPKgGnTQ+m96vR5YJ3nrthFLrjquuEKKhqTo="
+
+ota:
+  - platform: esphome
+    password: "842d8d2148edf77140f1416c5dd95aab"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32 Fallback Hotspot"
+    password: "JMEPtPOw7Z7M"
+
+captive_portal:
+
+
+remote_transmitter:
+  pin: 4
+  carrier_duty_percent: 50%
+
+climate:
+  - platform: midea_ir
+    name: "1103_AC"
+
+ 
+```
