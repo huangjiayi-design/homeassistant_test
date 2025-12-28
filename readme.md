@@ -224,12 +224,12 @@ docker run -d \
   --network=host \
   --device /dev/gpiomem:/dev/gpiomem \
   --device /dev/mem:/dev/mem \
-  ghcr.io/home-assistant/home-assistant:stable
+  docker.m.daocloud.io/homeassistant/home-assistant:stable
 ```
 
 
 ##### 修改后的正确格式
-```
+```yaml
 switch:
   - platform: rpi_gpio
     switches:
@@ -238,16 +238,9 @@ switch:
         unique_id: "raspberry_pi_led_17"
 ```
 
-PWM  软件设计:
-```
-light:
-  - platform: rpi_gpio
-    switches:
-      - port: 17
-        name: "My PWM LED"
-```
+PWM 软件设计：
 
-```
+```yaml
 # 1. 首先确保你的基础开关配置正确 (注意 entity_id 会是 switch.desk_led)
 switch:
   - platform: rpi_gpio
@@ -305,7 +298,7 @@ template:
               entity_id: switch.desk_led
 ```
 
-```
+```yaml
 switch:
   - platform: rpi_gpio
     switches:
@@ -318,7 +311,7 @@ switch:
 ```
 
 包装：
-```
+```yaml
 # 1. 基础开关 (物理层)
 switch:
   - platform: rpi_gpio
@@ -365,4 +358,272 @@ template:
           action: switch.turn_off
           target:
             entity_id: switch.fan_switch
+```
+
+
+### PWM硬件方面的实现：
+如果你是用 Docker 容器手动安装的 Home Assistant Core，你是看不到“加载项”菜单的。如果是这种情况，你需要手动在树莓派命令行安装 Mosquitto：sudo apt install mosquitto mosquitto-clients -y。
+
+既然你是在树莓派的 Docker 宿主机上直接通过 apt 安装了 Mosquitto，那么你的 MQTT 服务现在是直接运行在 Linux 系统层（宿主机）上的，而不是作为一个 Docker 容器。
+
+##### 1.启动并检查 Mosquitto 服务
+在终端执行以下命令，确保 MQTT 服务已经跑起来了：
+```
+# 启动服务
+sudo systemctl start mosquitto
+# 设置开机自启
+sudo systemctl enable mosquitto
+# 检查状态
+sudo systemctl status mosquitto
+```
+
+如果你看到 active (running)，说明“邮局”（Broker）已经开张了。
+
+##### 2.获取宿主机的 IP 地址
+因为你的 Home Assistant 跑在 Docker 里，它需要知道宿主机的 IP 才能连接到这个 MQTT 服务。 在终端输入：
+```
+hostname -I
+```
+通常会得到类似 192.168.x.x 的地址。记下这个 IP。
+10.211.181.9. 172.17.0.1
+
+10.211.181.9：这是你的树莓派在局域网（或是虚拟机网络）中的真实身份。
+172.17.0.1：这是 Docker 网桥 (Docker Bridge) 的地址。对于运行在 Docker 容器里的 Home Assistant 来说，这个地址就是通往“宿主机物理世界”的门户。
+
+
+##### 3.在 Home Assistant 中集成 MQTT
+现在你需要告诉 HA 去连接这个刚刚装好的 Mosquitto。
+
+1. 打开 HA 界面，点击 设置 (Settings) -> 设备与服务 (Devices & Services)。
+2. 点击右下角的 添加集成 (Add Integration)。
+3. 搜索并选择 MQTT。
+4. 在配置界面输入：
+- 代理 (Broker): 输入你刚才查到的宿主机 IP（如果是 Host 模式也可以试着填localhost）。
+- 端口 (Port): 1883。
+- 用户名/密码: 如果你刚才安装后没设，就先留空。
+5. 点击 提交。
+
+##### 但是我在提交的时候显示：连接失败：
+>
+>###### 1. 这个时候就需要打开文件mosquitto.conf文件了,可能是文件配置的问题
+>```
+>sudo nano /etc/mosquitto/mosquitto.conf
+>```
+>打开之后，检查文件，确保有以下内容,没有的话添加到文件最后面
+>```
+>listener 1883 0.0.0.0
+>allow_anonymous true
+>```
+>
+>0.0.0.0：强制 Mosquitto 监听所有网卡接口（包括 Docker 网桥接口）。
+>allow_anonymous true：允许匿名连接（如果你还没设置用户名密码）。
+>
+>保存退出（Ctrl+O, Enter, Ctrl+X）。
+>**之后重启mosquitto服务**：
+>```
+>sudo systemctl restart mosquitto
+>```
+>###### 2. 查看防火墙
+>如果 Mosquitto 配置正确但仍连接失败，可能是树莓派的防火墙（ufw）拦截了 1883 端口。
+>输入以下命令查看防火墙状态：
+>```
+>sudo ufw status
+>```
+>如果是inactive的话就没什么问题
+>如果是**active**, 请放行 1883 端口：
+>```
+>sudo ufw allow 1883
+>```
+>我这里查看防火墙的时候是inactive，所以就是前面mosquitto.conf文件的配置问题
+>###### 在用homeassistant连接之前测试一下：
+>重新开一个终端页面，输入以下指令，回车，如果在终端页面显示 hello ,即连接成功
+>```
+>mosquitto_pub -h 172.17.0.1 -t "test/topic" -m "Hello"
+>```
+>- 如果成功：没有任何报错，说明宿主机服务已准备好接受来自 Docker 网桥的连接。
+>- 如果失败：说明 Mosquitto 依然没配置好或者正在拒绝非 127.0.0.1 的 IP。
+>
+>###### 备选方案：
+>备选 IP 方案
+>如果 172.17.0.1 始终连接失败，你可以尝试在 Home Assistant 的配置界面使用你的局域网物理 IP：>10.211.181.9   
+>这个我试了一下，也是可以连接的
+
+##### 4.写python脚本并运行：
+HA 发送指令到 MQTT 代理，Python 脚本读取指令并控制 GPIO。
+###### (1). 安装 Python 环境和库： 在树莓派终端执行：
+```
+sudo apt update
+sudo apt install python3-pip python3-rpi.gpio -y
+pip3 install paho-mqtt
+```
+###### (2). 编写 Python 控制脚本
+在树莓派上创建一个名为 fan_controller.py 的文件，并写入以下内容：
+同时这个fan_controller.py文件的放置位置：
+```py
+import RPi.GPIO as GPIO
+import paho.mqtt.client as mqtt
+
+# --- 配置区 ---
+FAN_PIN = 18
+MQTT_BROKER = "localhost"
+MQTT_TOPIC = "home/fan/set_speed"      #和 HA 发布的主题一样，
+
+# --- GPIO 初始化 ---
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(FAN_PIN, GPIO.OUT)
+# 设置频率为 100Hz
+pwm = GPIO.PWM(FAN_PIN, 100)           #频率 100Hz，每秒开关100次
+pwm.start(0)                           #占空比 0~100，起初占空比为0
+
+# --- MQTT 回调函数 ---
+def on_message(client, userdata, message):   
+    try:
+        # 接收 0-100 的数值
+        speed = int(message.payload.decode("utf-8"))  #读取payload , 如 b'50'
+        print(f"设置风扇速度为: {speed}%") 
+        pwm.ChangeDutyCycle(speed)                    # 实际控制树莓派 GPIO 输出 PWM 信号,pwm是一个对象，可以调用它的方法，比如.ChangeDutyCyctle()。
+    except ValueError:
+        pass
+
+# --- 启动 MQTT 监听 ---
+client = mqtt.Client()        #创建一个新的 MQTT 客户端实例。mqtt.CallbackAPIVersion.VERSION2：指定使用新版回调接口（避免警告，更稳定）。
+client.on_message = on_message #告诉客户端：“以后一有消息来，就调用我写的 on_message函数！”
+client.connect(MQTT_BROKER, 1883, 60) #连接到 MQTT 服务器（Broker）。
+#参数：
+#地址：localhost（本机）
+#端口：1883（MQTT 默认端口）
+#超时时间：60秒
+client.subscribe(MQTT_TOPIC)         #订阅消息
+print("风扇中继脚本已启动，等待指令...")
+client.loop_forever()                #进入无限循环，持续监听网络消息。
+```
+
+后面一段脚本的修改
+```py
+# --- 启动 MQTT 监听 ---
+# 指定 Callback API 版本以兼容最新库
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2) 
+client.on_message = on_message
+client.connect(MQTT_BROKER, 1883, 60)
+client.subscribe(MQTT_TOPIC)
+print(f"风扇中继脚本已启动！监听主题: {MQTT_TOPIC}")
+client.loop_forever()
+```
+
+| 位置  | 角色 | 填写的IP地址 | 理由 |
+| :----: | :----: | :----: | :----: |
+|HA MQTT 集成界面 | 发信人 | 172.17.0.1 | 从容器跳向宿主机 |
+|Python 脚本变量 | 收信执行人 | 127.0.0.1 | 在宿主机内部通信 |
+| Mosquitto 配置文件 | 邮局/中转 | 0.0.0.0 | 允许监听来自所有方向（包括 HA）的连接 |
+
+##### 5. 在 Home Assistant 中接入
+组件一：  在 configuration.yaml 中，你可以定义一个 MQTT 平台的速度辅助器：
+```yaml
+# 1. 定义一个滑动条
+input_number:
+  fan_speed_slider:
+    name: "风扇调速"
+    initial: 0
+    min: 0
+    max: 100
+    step: 1
+
+
+# 2. 自动化：滑动条变动时发 MQTT 消息
+automation:
+  - alias: "Sync Fan Speed to MQTT"
+    trigger:
+      platform: state
+      entity_id: input_number.fan_speed_slider
+    action:
+      action: mqtt.publish
+      data:
+        topic: "home/fan/set_speed"
+        payload: "{{ states('input_number.fan_speed_slider') | int }}"
+```
+
+组件二：
+我们需要一个 UI 组件来发送 MQTT 消息。最快的方法是修改 configuration.yaml：
+打开 configuration.yaml，添加一个滑块和对应的自动化：
+```yaml
+# 1. 创建一个 0-100 的数值滑块
+input_number:
+  fan_speed_control:
+    name: "风扇转速百分比"
+    initial: 0
+    min: 0
+    max: 100
+    step: 1
+    unit_of_measurement: "%"
+    icon: mdi:fan
+
+# 2. 自动化：当滑块变动时，向 MQTT 发送消息
+automation:
+  - alias: "推送风扇速度到MQTT"
+    trigger:
+      platform: state
+      entity_id: input_number.fan_speed_control
+    action:
+      - action: mqtt.publish
+        data:
+          topic: "home/fan/set_speed"
+          payload: "{{ states('input_number.fan_speed_control') | int }}"
+```
+
+注释版本：
+```yaml
+input_number:
+  fan_speed_control:       # 系统的“身份证号”(Entity ID)，不可重复
+    name: "风扇转速百分比"  # 界面显示的友好名称
+    initial: 0             # 每次重启 HA 后滑块默认的位置
+    min: 0                 # 最小值
+    max: 100               # 最大值
+    step: 1                # 每次滑动的最小间隔
+    unit_of_measurement: "%" # 在数字后面显示的单位
+    icon: mdi:fan          # 组件旁边的图标（一个风扇图标）
+```
+它就像一个中转站。你在屏幕上拖动滑块，实质上是在改变这个变量的值。但仅仅改变这个值，风扇是不会转的，因为它还没和 MQTT 关联起来。
+
+automation：定义“联动规则”
+这部分是“大脑”，负责把滑块的变化翻译成MQTT指令发出去:
+```yaml
+automation:
+  - alias: "推送风扇速度到MQTT" # 自动化的名字
+    trigger:                   # 【触发器】：什么时候开始工作？
+      platform: state          # 监控状态变化
+      entity_id: input_number.fan_speed_control # 只要滑块被拖动了
+    action:                    # 【动作】：要做什么？
+      - action: mqtt.publish   # 执行发送 MQTT 消息的动作
+        data:
+          topic: "home/fan/set_speed" # 消息的目的地（必须和 Python 脚本里的一致）
+          # payload 是具体的信件内容：
+          # {{ ... }} 是一段模板代码，意思是：取出滑块当前的状态值，并转为整数(int)
+          payload: "{{ states('input_number.fan_speed_control') | int }}"
+```
+含义：一旦触发器发现滑块变了（比如从 20 变到了 50），它就会抓取这个“50”，打包成 MQTT 报文发给宿主机的 Mosquitto 邮局。
+
+
+
+```yaml
+input_number:  #定义一个输入实体
+  fan_speed_slider:  #创建一个fan_speed_slider的输入数字实体，在 Home Assistant 前端会显示为一个滑块或输入框，用户可以通过它设置风扇速度。
+    name: "风扇调速"   #显示在界面上的名称，中文"风扇调速"
+    initial: 0        #初始值为 0
+    min: 0            #最小值为 0
+    max: 100          #最大值为 100
+    step: 1           #调节的步长 为 1
+
+
+# 2. 自动化：滑动条变动时发 MQTT 消息
+#当fan_speed_slider 的值发生变化时，自动通过 MQTT协议发布一条消息，把当前速度值发送给支的MQTT的风扇设备，这时就使用到我们写的脚本了
+automation:                #
+  - alias: "Sync Fan Speed to MQTT"
+    trigger:               #触发器
+      platform: state      #监听 input_number.fan_speed_slider这个实体的状态变化，只要用户拖动滑块或修改这个数值，就触发这个自动化
+      entity_id: input_number.fan_speed_slider
+    action:                #动作，执行MQTT发布动作
+      action: mqtt.publish #执行MQTT发布动作
+      data:
+        topic: "home/fan/set_speed"   #消息发送到MQTT的主题，通常风扇设备会订阅这个主题，收到消息后调整风速
+        payload: "{{ states('input_number.fan_speed_slider') | int }}"  #把输入实体的数据传过来，同时，将其传过来的字符串形式转换成整型数字
 ```
