@@ -700,3 +700,30 @@ sudo docker run -d \
 -v /home/$USER/esphome_config:/config: 所有的代码文件会存在你树莓派的这个目录下。
 
 --device /dev/ttyUSB0:/dev/ttyUSB0: 这让网页界面能直接通过 USB 线刷写你插在树莓派上的 ESP32。
+从官方那里拉取镜像：
+```
+sudo docker pull ghcr.io/esphome/esphome:latest
+```
+启动容器：
+```
+sudo docker run -d \
+  --name esphome-dashboard \
+  --restart=unless-stopped \
+  --privileged \
+  --network=host \
+  -v /home/$USER/esphome_config:/config \
+  --device /dev/ttyUSB0:/dev/ttyUSB0 \
+  ghcr.io/esphome/esphome:latest
+```
+
+http://127.0.0.1:6052
+
+```
+remote_transmitter:
+  pin: GPIO4
+  carrier_duty_cycle: 50%
+
+climate:
+  - platform: midea
+    name: "Laboratory AC"
+```
