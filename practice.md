@@ -189,7 +189,7 @@ ghcr.io/...:stable：这就是你要下载的镜像（Image）。
 1.运行完上面的命令后，终端会显示一串长长的 ID。
 
 2.输入 sudo docker ps 确认一下，如果看到 homeassistant 状态是 Up，说明它已经在运行了！
-
+ 
 3.打开浏览器（用你的电脑或者树莓派里的浏览器），在地址栏输入： http://localhost:8123 （如果在树莓派本地） 或者 http://树莓派的IP地址:8123 （在另一台电脑上）
 
 ### 关卡二： 把 Home Assistant 的“集装箱（容器）”放到这个地基上。
@@ -251,7 +251,8 @@ sudo docker inspect docker.m.daocloud.io/homeassistant/home-assistant:stable | g
 ```
 第三步：强制以“指定架构”模式运行
 在运行命令时，我们再次声明平台，并使用刚才下载的新地址：
-```sudo docker run -d \
+```
+sudo docker run -d \
   --name homeassistant \
   --privileged \
   --restart=unless-stopped \
@@ -261,4 +262,10 @@ sudo docker inspect docker.m.daocloud.io/homeassistant/home-assistant:stable | g
   --network=host \
   docker.m.daocloud.io/homeassistant/home-assistant:stable
 
+```
+
+
+关闭ubuntu上的防火墙：
+```
+sudo ufw disable
 ```
