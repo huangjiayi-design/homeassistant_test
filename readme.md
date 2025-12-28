@@ -454,11 +454,23 @@ HA 发送指令到 MQTT 代理，Python 脚本读取指令并控制 GPIO。
 ```
 sudo apt update
 sudo apt install python3-pip python3-rpi.gpio -y
-pip3 install paho-mqtt
+sudo apt install python3-paho-mqtt -y
 ```
 ###### (2). 编写 Python 控制脚本
 在树莓派上创建一个名为 fan_controller.py 的文件，并写入以下内容：
 同时这个fan_controller.py文件的放置位置：
+```
+cd ~
+mkdir -p ~/scripts
+cd ~/scripts
+```
+```
+nano fan_controller.py
+```
+```
+sudo python3 /home/ubuntu/scripts/fan_controller.py
+```
+
 ```py
 import RPi.GPIO as GPIO
 import paho.mqtt.client as mqtt
@@ -626,4 +638,48 @@ automation:                #
       data:
         topic: "home/fan/set_speed"   #消息发送到MQTT的主题，通常风扇设备会订阅这个主题，收到消息后调整风速
         payload: "{{ states('input_number.fan_speed_slider') | int }}"  #把输入实体的数据传过来，同时，将其传过来的字符串形式转换成整型数字
+```
+
+
+蓝牙遥控接入空调设备
+因为我的蓝牙接入之后一直是：
+![](6ad368c8bfd5d9054199451fe4ed54a2_720.jpg)
+
+
+报错明确显示：DBus service not found; docker config may be missing '-v /run/dbus:/run/dbus:ro'。
+这证实了之前的猜想：Home Assistant 容器虽然看到了蓝牙硬件，但是没有权限与 Ubuntu 系统的蓝牙管理服务（DBus/BlueZ）通信，导致它空有“控制权”却发不出指令。
+
+```
+# 1. 查看蓝牙服务是否运行
+sudo systemctl status bluetooth
+# 2. 查看蓝牙硬件是否被软/硬锁定
+rfkill list
+# 3. 检查蓝牙控制器是否被识别
+bluetoothctl show
+```
+- 服务正常： bluetooth.service 处于 active (running) 状态。
+- 硬件未锁定： rfkill list 显示 Bluetooth 没有被软/硬锁定。
+- 控制器就绪： bluetoothctl show 成功列出了控制器地址 E4:5F:01:A8:B9:66，且 Powered: yes。
+
+
+你需要删除现有的容器并带上正确的参数重新启动。请在树莓派终端执行以下操作：
+```
+docker stop homeassistant
+docker rm homeassistant
+```
+
+使用“全权限”指令重新启动
+我为你优化了指令，重点加入了 /run/dbus 的挂载，这是解决该报错的核心：
+```
+docker run -d \
+  --name homeassistant \
+  --privileged \
+  --restart=unless-stopped \
+  -e TZ=Asia/Shanghai \
+  -v /home/$USER/hass_config:/config \
+  -v /run/dbus:/run/dbus:ro \
+  --network=host \
+  --device /dev/gpiomem:/dev/gpiomem \
+  --device /dev/mem:/dev/mem \
+  docker.m.daocloud.io/homeassistant/home-assistant:stable
 ```
