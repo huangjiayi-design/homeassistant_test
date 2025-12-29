@@ -669,7 +669,7 @@ docker rm homeassistant
 ```
 
 使用“全权限”指令重新启动
-我为你优化了指令，重点加入了 /run/dbus 的挂载，这是解决该报错的核心：
+优化了指令，重点加入了 /run/dbus 的挂载，这是解决该报错的核心：
 ```
 docker run -d \
   --name homeassistant \
