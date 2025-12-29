@@ -1,4 +1,4 @@
-# Raspberry Pi Home Assistant 落地实战手册 (手机热点版)
+# Raspberry Pi Home Assistant 
 
 ## 🛠 环境准备
 - 硬件：Raspberry Pi 4B/5（ARM64 架构）
@@ -724,6 +724,6 @@ remote_transmitter:
   carrier_duty_cycle: 50%
 
 climate:
-  - platform: midea
+  - platform: midea_ir
     name: "Laboratory AC"
 ```
