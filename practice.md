@@ -661,3 +661,35 @@ DEBUG Tool tool-esptoolpy found with correct version
 Error: Failed to install Python dependencies (exit code: 2)
 Error: Failed to install Python dependencies into penv
 ```
+
+```
+esphome:
+  name: test-esp32
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  - platform: esphome
+    password: ""
+
+wifi:
+  ssid: "cmd1122"
+  password: "01256789"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test-Esp32 Fallback Hotspot"
+    password: "xnHOF9FieYGW"
+
+captive_portal:
+```
