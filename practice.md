@@ -693,3 +693,35 @@ wifi:
 
 captive_portal:
 ```
+
+```
+esphome:
+  name: esp32-device
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "password"
+
+ota:
+  - platform: esphome
+    password: "password"
+
+wifi:
+  ssid: "cmd1122"
+  password: "01256789"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Device Fallback Hotspot"
+    password: "dqNsCs1Uh5Dk"
+
+captive_portal:
+```
