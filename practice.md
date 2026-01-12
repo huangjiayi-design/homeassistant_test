@@ -317,4 +317,56 @@ climate:
 
  
 ```
+```yaml
+# 1. 定义串口总线（确保 id 与下方 button 匹配）
+uart:
+  id: ir_uart
+  tx_pin: GPIO4
+  rx_pin: GPIO5
+  baud_rate: 9600
 
+# 2. 按钮控制逻辑
+button:
+  - platform: template
+    name: "学习红外码"
+    icon: mdi:remote-learning
+    on_press:
+      then:
+        # 按照您要求的格式发送“学习”指令（假设 RIR 对应的十六进制为示例数据）
+        # 注意：这里的 [0x52, 0x49, 0x52, 0x0D, 0x0A] 是 "RIR\r\n" 的十六进制
+        - uart.write: [0x52, 0x49, 0x52, 0x0D, 0x0A]
+        - delay: 20s
+        - lambda: |-
+            std::string data;
+            uint32_t start = millis();
+            auto uart_dev = id(ir_uart); 
+            while (millis() - start < 1000) {
+              while (uart_dev->available()) {
+                // 指针调用必须用 ->
+                data += (char)uart_dev->read(); 
+              }
+              yield(); // 防止 esp-idf 框架下看门狗重启
+            }
+            id(ir_response).publish_state(data.empty() ? "读取超时" : data);
+
+  - platform: template
+    name: "发送红外码001"
+    icon: mdi:remote
+    on_press:
+      then:
+        # 按照您要求的格式发送“发送”指令
+        # 注意：这里的 [0x53, 0x49, 0x52, 0x30, 0x30, 0x31, 0x0D, 0x0A] 是 "SIR001\r\n" 的十六进制
+        - uart.write: [0x53, 0x49, 0x52, 0x30, 0x30, 0x31, 0x0D, 0x0A]
+        - delay: 1s
+        - lambda: |-
+            std::string data;
+            uint32_t start = millis();
+            auto uart_dev = id(ir_uart);
+            while (millis() - start < 1000) {
+              while (uart_dev->available()) {
+                data += (char)uart_dev->read();
+              }
+              yield();
+            }
+            id(ir_response).publish_state(data.empty() ? "读取超时" : data);
+```
