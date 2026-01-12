@@ -317,6 +317,419 @@ climate:
 
  
 ```
+
+
+```
+ubuntu@ubuntu-desktop:~/esphome-project$ uv run esphome -v run my_config.yaml
+INFO ESPHome 2025.12.4
+INFO Reading configuration my_config.yaml...
+INFO Generating C++ source...
+DEBUG Running to_code in esphome.components.network (num 14)
+DEBUG Adding: // network:
+DEBUG Adding: //   enable_ipv6: false
+//   min_ipv6_addr_count: 0
+DEBUG Adding define: USE_NETWORK=None
+DEBUG Adding define: USE_NETWORK_IPV6=false
+DEBUG  -> finished
+DEBUG Running to_code in esphome.core.config (num 0)
+DEBUG Adding: // esphome:
+DEBUG Adding: //   name: test-esp32
+//   min_version: 2025.12.4
+//   build_path: build/test-esp32
+//   friendly_name: ''
+//   platformio_options: {}
+//   environment_variables: {}
+//   includes: []
+//   includes_c: []
+//   libraries: []
+//   name_add_mac_suffix: false
+//   debug_scheduler: false
+//   areas: []
+//   devices: []
+DEBUG Adding global: using namespace esphome;
+DEBUG Adding global: using std::isnan;
+DEBUG Adding global: using std::min;
+DEBUG Adding global: using std::max;
+DEBUG Adding: App.pre_setup("test-esp32", "", "", __DATE__ ", " __TIME__, false);
+DEBUG Adding define: ESPHOME_COMPONENT_COUNT=10
+DEBUG Adding build flag: -fno-exceptions
+DEBUG Adding build flag: -Wno-unused-variable
+DEBUG Adding build flag: -Wno-unused-but-set-variable
+DEBUG Adding build flag: -Wno-sign-compare
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.logger (num 2)
+DEBUG Adding: // logger:
+DEBUG Adding: //   id: logger_logger_id
+//   baud_rate: 115200
+//   tx_buffer_size: 512
+//   deassert_rts_dtr: false
+//   task_log_buffer_size: 768
+//   hardware_uart: UART0
+//   level: DEBUG
+//   logs: {}
+//   runtime_tag_levels: false
+DEBUG Adding global: logger::Logger *logger_logger_id;
+DEBUG Adding: logger_logger_id = new logger::Logger(115200, 512);
+DEBUG Registered variable logger_logger_id of type logger::Logger
+DEBUG Adding: logger_logger_id->create_pthread_key();
+DEBUG Adding define: USE_ESPHOME_TASK_LOG_BUFFER=None
+DEBUG Adding: logger_logger_id->init_log_buffer(768);
+DEBUG Adding: logger_logger_id->set_log_level(ESPHOME_LOG_LEVEL_DEBUG);
+DEBUG Adding: logger_logger_id->set_uart_selection(logger::UART_SELECTION_UART0);
+DEBUG Adding: logger_logger_id->pre_setup();
+DEBUG Adding define: USE_LOGGER=None
+DEBUG Adding build flag: -DESPHOME_LOG_LEVEL=ESPHOME_LOG_LEVEL_DEBUG
+DEBUG Adding: logger_logger_id->set_component_source(LOG_STR("logger"));
+DEBUG Adding: App.register_component(logger_logger_id);
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.web_server_base (num 15)
+DEBUG Adding: // web_server_base:
+DEBUG Adding: //   id: web_server_base_webserverbase_id
+DEBUG Adding global: web_server_base::WebServerBase *web_server_base_webserverbase_id;
+DEBUG Adding: web_server_base_webserverbase_id = new web_server_base::WebServerBase();
+DEBUG Registered variable web_server_base_webserverbase_id of type web_server_base::WebServerBase
+DEBUG Adding: web_server_base_webserverbase_id->set_component_source(LOG_STR("web_server_base"));
+DEBUG Adding: App.register_component(web_server_base_webserverbase_id);
+DEBUG Adding: web_server_base::global_web_server_base = web_server_base_webserverbase_id;
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.captive_portal (num 8)
+DEBUG Adding: // captive_portal:
+DEBUG Adding: //   id: captive_portal_captiveportal_id
+//   web_server_base_id: web_server_base_webserverbase_id
+DEBUG Adding global: captive_portal::CaptivePortal *captive_portal_captiveportal_id;
+DEBUG Adding: captive_portal_captiveportal_id = new captive_portal::CaptivePortal(web_server_base_webserverbase_id);
+DEBUG Registered variable captive_portal_captiveportal_id of type captive_portal::CaptivePortal
+DEBUG Adding: captive_portal_captiveportal_id->set_component_source(LOG_STR("captive_portal"));
+DEBUG Adding: App.register_component(captive_portal_captiveportal_id);
+DEBUG Adding define: USE_CAPTIVE_PORTAL=None
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Adding: // wifi:
+DEBUG Adding: //   ap:
+//     ssid: Test-Esp32 Fallback Hotspot
+//     password: xnHOF9FieYGW
+//     id: wifi_wifiap_id
+//     ap_timeout: 90s
+//   id: wifi_wificomponent_id
+//   domain: .local
+//   reboot_timeout: 15min
+//   power_save_mode: LIGHT
+//   fast_connect: false
+//   enable_btm: false
+//   enable_rrm: false
+//   passive_scan: false
+//   enable_on_boot: true
+//   min_auth_mode: WPA2
+//   networks:
+//     - ssid: cmd1122
+//       password: 01256789
+//       id: wifi_wifiap_id_2
+//       priority: 0
+//   use_address: test-esp32.local
+DEBUG Adding global: wifi::WiFiComponent *wifi_wificomponent_id;
+DEBUG Adding: wifi_wificomponent_id = new wifi::WiFiComponent();
+DEBUG Registered variable wifi_wificomponent_id of type wifi::WiFiComponent
+DEBUG Adding: wifi_wificomponent_id->set_use_address("test-esp32.local");
+DEBUG Adding: wifi_wificomponent_id->init_sta(1);
+DEBUG Adding: {
+DEBUG Adding: wifi::WiFiAP wifi_wifiap_id_2 = wifi::WiFiAP();
+DEBUG Registered variable wifi_wifiap_id_2 of type wifi::WiFiAP
+DEBUG Adding: wifi_wifiap_id_2.set_ssid("cmd1122");
+DEBUG Adding: wifi_wifiap_id_2.set_password("01256789");
+DEBUG Adding: wifi_wifiap_id_2.set_priority(0);
+DEBUG Adding: wifi_wificomponent_id->add_sta(wifi_wifiap_id_2);
+DEBUG Adding: }
+DEBUG Adding: {
+DEBUG Adding: wifi::WiFiAP wifi_wifiap_id = wifi::WiFiAP();
+DEBUG Registered variable wifi_wifiap_id of type wifi::WiFiAP
+DEBUG Adding: wifi_wifiap_id.set_ssid("Test-Esp32 Fallback Hotspot");
+DEBUG Adding: wifi_wifiap_id.set_password("xnHOF9FieYGW");
+DEBUG Adding: wifi_wificomponent_id->set_ap(wifi_wifiap_id);
+DEBUG Adding: }
+DEBUG Adding: wifi_wificomponent_id->set_ap_timeout(90000);
+DEBUG Adding define: USE_WIFI_AP=None
+DEBUG Adding: wifi_wificomponent_id->set_reboot_timeout(900000);
+DEBUG Adding: wifi_wificomponent_id->set_power_save_mode(wifi::WIFI_POWER_SAVE_LIGHT);
+DEBUG Adding: wifi_wificomponent_id->set_min_auth_mode(wifi::WIFI_MIN_AUTH_MODE_WPA2);
+DEBUG Adding define: USE_WIFI=None
+DEBUG Adding: wifi_wificomponent_id->set_component_source(LOG_STR("wifi"));
+DEBUG Adding: App.register_component(wifi_wificomponent_id);
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.mdns (num 16)
+DEBUG Adding: // mdns:
+DEBUG Adding: //   id: mdns_mdnscomponent_id
+//   disabled: false
+//   services: []
+DEBUG Adding define: USE_MDNS=None
+DEBUG Adding define: MDNS_SERVICE_COUNT=1
+DEBUG Adding global: mdns::MDNSComponent *mdns_mdnscomponent_id;
+DEBUG Adding: mdns_mdnscomponent_id = new mdns::MDNSComponent();
+DEBUG Registered variable mdns_mdnscomponent_id of type mdns::MDNSComponent
+DEBUG Adding: mdns_mdnscomponent_id->set_component_source(LOG_STR("mdns"));
+DEBUG Adding: App.register_component(mdns_mdnscomponent_id);
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.ota (num 4)
+DEBUG Adding: // ota:
+DEBUG Adding define: USE_OTA=None
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.esphome.ota (num 6)
+DEBUG Adding: // ota.esphome:
+DEBUG Adding: //   platform: esphome
+//   password: ''
+//   id: esphome_esphomeotacomponent_id
+//   version: 2
+//   port: 3232
+DEBUG Adding global: esphome::ESPHomeOTAComponent *esphome_esphomeotacomponent_id;
+DEBUG Adding: esphome_esphomeotacomponent_id = new esphome::ESPHomeOTAComponent();
+DEBUG Registered variable esphome_esphomeotacomponent_id of type esphome::ESPHomeOTAComponent
+DEBUG Adding: esphome_esphomeotacomponent_id->set_port(3232);
+DEBUG Adding define: USE_OTA_VERSION=2
+DEBUG Adding: esphome_esphomeotacomponent_id->set_component_source(LOG_STR("esphome.ota"));
+DEBUG Adding: App.register_component(esphome_esphomeotacomponent_id);
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.esphome.ota (num 6)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.web_server.ota (num 5)
+DEBUG Adding: // ota.web_server:
+DEBUG Adding: //   platform: web_server
+//   id: web_server_webserverotacomponent_id
+DEBUG Adding global: web_server::WebServerOTAComponent *web_server_webserverotacomponent_id;
+DEBUG Adding: web_server_webserverotacomponent_id = new web_server::WebServerOTAComponent();
+DEBUG Registered variable web_server_webserverotacomponent_id of type web_server::WebServerOTAComponent
+DEBUG Running to_code in esphome.components.esphome.ota (num 6)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.web_server.ota (num 5)
+DEBUG Running to_code in esphome.components.esphome.ota (num 6)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.web_server.ota (num 5)
+DEBUG Running to_code in esphome.components.esphome.ota (num 6)
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG Running to_code in esphome.components.safe_mode (num 11)
+DEBUG Adding: // safe_mode:
+DEBUG Adding: //   id: safe_mode_safemodecomponent_id
+//   boot_is_good_after: 1min
+//   disabled: false
+//   num_attempts: 10
+//   reboot_timeout: 5min
+DEBUG Adding global: safe_mode::SafeModeComponent *safe_mode_safemodecomponent_id;
+DEBUG Adding: safe_mode_safemodecomponent_id = new safe_mode::SafeModeComponent();
+DEBUG Registered variable safe_mode_safemodecomponent_id of type safe_mode::SafeModeComponent
+DEBUG Adding: safe_mode_safemodecomponent_id->set_component_source(LOG_STR("safe_mode"));
+DEBUG Adding: App.register_component(safe_mode_safemodecomponent_id);
+DEBUG Adding: if (safe_mode_safemodecomponent_id->should_enter_safe_mode(10, 300000, 60000)) return;
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.web_server.ota (num 5)
+DEBUG Adding: web_server_webserverotacomponent_id->set_component_source(LOG_STR("web_server.ota"));
+DEBUG Adding: App.register_component(web_server_webserverotacomponent_id);
+DEBUG Adding define: USE_WEBSERVER_OTA=None
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.esphome.ota (num 6)
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.wifi (num 7)
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.api (num 3)
+DEBUG Adding: // api:
+DEBUG Adding: //   password: ''
+//   id: api_apiserver_id
+//   port: 6053
+//   reboot_timeout: 15min
+//   batch_delay: 100ms
+//   custom_services: false
+//   homeassistant_services: false
+//   homeassistant_states: false
+//   listen_backlog: 4
+//   max_connections: 8
+//   max_send_queue: 8
+DEBUG Adding global: api::APIServer *api_apiserver_id;
+DEBUG Adding: api_apiserver_id = new api::APIServer();
+DEBUG Registered variable api_apiserver_id of type api::APIServer
+DEBUG Adding: api_apiserver_id->set_component_source(LOG_STR("api"));
+DEBUG Adding: App.register_component(api_apiserver_id);
+DEBUG Adding: api_apiserver_id->set_port(6053);
+DEBUG Adding: api_apiserver_id->set_reboot_timeout(900000);
+DEBUG Adding: api_apiserver_id->set_batch_delay(100);
+DEBUG Adding: api_apiserver_id->set_listen_backlog(4);
+DEBUG Adding: api_apiserver_id->set_max_connections(8);
+DEBUG Adding define: API_MAX_SEND_QUEUE=8
+DEBUG Adding define: USE_API_PLAINTEXT=None
+DEBUG Adding define: USE_API=None
+DEBUG Adding global: using namespace api;
+DEBUG  -> finished
+DEBUG Running _add_automations in esphome.core.config (num 20)
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.esp32 (num 1)
+DEBUG Adding: // esp32:
+DEBUG Adding: //   board: esp32dev
+//   framework:
+//     type: esp-idf
+//     version: 5.5.1
+//     sdkconfig_options: {}
+//     log_level: ERROR
+//     advanced:
+//       compiler_optimization: SIZE
+//       enable_idf_experimental_features: false
+//       enable_lwip_assert: true
+//       ignore_efuse_custom_mac: false
+//       ignore_efuse_mac_crc: false
+//       enable_lwip_mdns_queries: true
+//       enable_lwip_bridge_interface: false
+//       enable_lwip_tcpip_core_locking: true
+//       enable_lwip_check_thread_safety: true
+//       disable_libc_locks_in_iram: true
+//       disable_vfs_support_termios: true
+//       disable_vfs_support_select: true
+//       disable_vfs_support_dir: true
+//       freertos_in_iram: false
+//       ringbuf_in_iram: false
+//       execute_from_psram: false
+//       loop_task_stack_size: 8192
+//     components: []
+//     platform_version: https:github.com/pioarduino/platform-espressif32/releases/download/55.03.31-2/platform-espressif32.zip
+//     source: pioarduino/framework-espidf@https:github.com/pioarduino/esp-idf/releases/download/v5.5.1/esp-idf-v5.5.1.tar.xz
+//   flash_size: 4MB
+//   variant: ESP32
+//   cpu_frequency: 160MHZ
+DEBUG Adding build unflag: -std=gnu++11
+DEBUG Adding build unflag: -std=gnu++14
+DEBUG Adding build unflag: -std=gnu++17
+DEBUG Adding build unflag: -std=gnu++23
+DEBUG Adding build unflag: -std=gnu++2a
+DEBUG Adding build unflag: -std=gnu++2b
+DEBUG Adding build unflag: -std=gnu++2c
+DEBUG Adding build flag: -std=gnu++20
+DEBUG Adding build flag: -DUSE_ESP32
+DEBUG Adding build flag: -Wl,-z,noexecstack
+DEBUG Adding define: ESPHOME_BOARD="esp32dev"
+DEBUG Adding build flag: -DUSE_ESP32_VARIANT_ESP32
+DEBUG Adding define: ESPHOME_VARIANT="ESP32"
+DEBUG Adding define: ESPHOME_THREAD_MULTI_ATOMICS=None
+DEBUG Adding build flag: -DUSE_ESP_IDF
+DEBUG Adding build flag: -DUSE_ESP32_FRAMEWORK_ESP_IDF
+DEBUG Adding build flag: -Wno-nonnull-compare
+INFO Setting CONFIG_LWIP_MAX_SOCKETS to 11 (registered: api=4, captive_portal=4, mdns=2, ota=1)
+DEBUG Adding define: ESPHOME_LOOP_TASK_STACK_SIZE=8192
+DEBUG Adding define: USE_ESP_IDF_VERSION_CODE=VERSION_CODE(5, 5, 1)
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.preferences (num 9)
+DEBUG Adding: // preferences:
+DEBUG Adding: //   id: preferences_intervalsyncer_id
+//   flash_write_interval: 60s
+DEBUG Adding global: preferences::IntervalSyncer *preferences_intervalsyncer_id;
+DEBUG Adding: preferences_intervalsyncer_id = new preferences::IntervalSyncer();
+DEBUG Registered variable preferences_intervalsyncer_id of type preferences::IntervalSyncer
+DEBUG Adding: preferences_intervalsyncer_id->set_write_interval(60000);
+DEBUG Adding: preferences_intervalsyncer_id->set_component_source(LOG_STR("preferences"));
+DEBUG Adding: App.register_component(preferences_intervalsyncer_id);
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.md5 (num 10)
+DEBUG Adding: // md5:
+DEBUG Adding define: USE_MD5=None
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.socket (num 12)
+DEBUG Adding: // socket:
+DEBUG Adding: //   implementation: bsd_sockets
+DEBUG Adding define: USE_SOCKET_IMPL_BSD_SOCKETS=None
+DEBUG Adding define: USE_SOCKET_SELECT_SUPPORT=None
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.sha256 (num 13)
+DEBUG Adding: // sha256:
+DEBUG Adding: //   {}
+DEBUG  -> finished
+DEBUG Running to_code in esphome.components.web_server_idf (num 17)
+DEBUG Adding: // web_server_idf:
+DEBUG Adding: //   {}
+DEBUG  -> finished
+DEBUG Running _add_platform_defines in esphome.core.config (num 18)
+DEBUG  -> finished
+DEBUG Running _add_controller_registry_define in esphome.core.config (num 19)
+DEBUG Adding define: USE_CONTROLLER_REGISTRY=None
+DEBUG Adding define: CONTROLLER_REGISTRY_MAX=1
+DEBUG  -> finished
+DEBUG Running final_step in esphome.components.logger (num 21)
+DEBUG  -> finished
+DEBUG Running final_step in esphome.components.wifi (num 22)
+DEBUG  -> finished
+INFO Compiling app... Build path: /home/ubuntu/esphome-project/.esphome/build/test-esp32
+DEBUG Running:  platformio run -d /home/ubuntu/esphome-project/.esphome/build/test-esp32 -v
+Processing test-esp32 (board: esp32dev; board_build.partitions: partitions.csv; board_upload.flash_size: 4MB; board_upload.maximum_size: 4194304; build_flags: -DESPHOME_LOG_LEVEL=ESPHOME_LOG_LEVEL_DEBUG, -DUSE_ESP32, -DUSE_ESP32_FRAMEWORK_ESP_IDF, -DUSE_ESP32_VARIANT_ESP32, -DUSE_ESP_IDF, -Wl,-z,noexecstack, -Wno-nonnull-compare, -Wno-sign-compare, -Wno-unused-but-set-variable, -Wno-unused-variable, -fno-exceptions, -std=gnu++20; build_unflags: -std=gnu++11, -std=gnu++14, -std=gnu++17, -std=gnu++23, -std=gnu++2a, -std=gnu++2b, -std=gnu++2c; extra_scripts: pre:pre_build.py, post:post_build.py, pre:cxx_flags.py; framework: espidf; lib_compat_mode: strict; lib_deps: ; lib_ldf_mode: off; platform: https://github.com/pioarduino/platform-espressif32/releases/download/55.03.31-2/platform-espressif32.zip; platform_packages: pioarduino/framework-espidf@https://github.com/pioarduino/esp-idf/releases/download/v5.5.1/esp-idf-v5.5.1.tar.xz)
+-------------------------------------------------------------------------------------------------------------------------------------------
+DEBUG Version comparison: installed='5.3.4' vs required='5.3.4'
+DEBUG tool-esp_install version 5.3.4 is already correctly installed
+DEBUG tool-esp_install is available and ready
+DEBUG Tool tool-esptoolpy found with correct version
+Error: Failed to install Python dependencies (exit code: 2)
+Error: Failed to install Python dependencies into penv
+```
+
+```
+esphome:
+  name: test-esp32
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: ""
+
+ota:
+  - platform: esphome
+    password: ""
+
+wifi:
+  ssid: "cmd1122"
+  password: "01256789"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test-Esp32 Fallback Hotspot"
+    password: "xnHOF9FieYGW"
+
+captive_portal:
+```
+
+```
+esphome:
+  name: esp32-device
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: "password"
+
+ota:
+  - platform: esphome
+    password: "password"
+
+wifi:
+  ssid: "cmd1122"
+  password: "01256789"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32-Device Fallback Hotspot"
+    password: "dqNsCs1Uh5Dk"
+
+captive_portal:
+
+```
+
 ```yaml
 # 1. 定义串口总线（确保 id 与下方 button 匹配）
 uart:
